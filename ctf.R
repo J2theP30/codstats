@@ -7,7 +7,7 @@ library(gganimate)
 
 #set wd
 setwd('C:/Users/JP/Documents/codstats/wwii_structured')
-img <- readPNG('cwl-data/maps/ww2/london_docks.png')
+img <- readPNG('cwl-data/maps/ww2/ardennes_forest.png')
 #make df to put output in
 output <- data.frame()
 
@@ -18,7 +18,7 @@ for(j in 1:length(location)) {
   print(location[j]) # show when you start each new event
   
   
-  for (i in 9:length(filenames)) {
+  for (i in 1:length(filenames)) {
     
     #read each json file in as list of lists
     data_json <- fromJSON(filenames[i], simplifyVector = T)
@@ -49,36 +49,29 @@ for(j in 1:length(location)) {
       
       if(data_json$map == "London Docks") {
         #docks
-        zone1 = c(445)
-        zone2= c(645)
+        zone1 = c(550)
       } else if (data_json$map == "Flak Tower") {
         #flaktower
-        zone1 = c(400)
-        zone2 = c(600)
+        zone1 = c(510)
       } else if (data_json$map == "Ardennes Forest") {
         #ardennes
-        zone1 = c(400)
-        zone2 = c(600)
+        zone1 = c(520)
       }
       
       if(data_json$map == "Ardennes Forest"){
-        data$dzoneh <- (data$homeaway=="home" & data$data.attacker.pos.x<=zone1[1])*1
-        data$nzoneh <- (data$homeaway=="home" & data$data.attacker.pos.x>zone1[1] & data$data.attacker.pos.x<=zone2[1])*1
-        data$azoneh <- (data$homeaway=="home" & data$data.attacker.pos.x>zone2[1])*1
+        data$dzoneh <- (data$homeaway=="home" & data$data.attacker.pos.x<zone1[1])*1
+        data$azoneh <- (data$homeaway=="home" & data$data.attacker.pos.x>=zone1[1])*1
         
-        data$azonea <- (data$homeaway=="away" & data$data.attacker.pos.x<zone1[1])*1
-        data$nzonea <- (data$homeaway=="away" & data$data.attacker.pos.x<zone2[1] & data$data.attacker.pos.x>=zone1[1])*1
-        data$dzonea <- (data$homeaway=="away" & data$data.attacker.pos.x>=zone2[1])*1
+        data$azonea <- (data$homeaway=="away" & data$data.attacker.pos.x<=zone1[1])*1
+        data$dzonea <- (data$homeaway=="away" & data$data.attacker.pos.x>zone1[1])*1
         
       }
       else{
-        data$dzoneh <- (data$homeaway=="home" & data$data.attacker.pos.y<=zone1[1])*1
-        data$nzoneh <- (data$homeaway=="home" & data$data.attacker.pos.y>zone1[1] & data$data.attacker.pos.y<=zone2[1])*1
-        data$azoneh <- (data$homeaway=="home" & data$data.attacker.pos.y>zone2[1])*1
+        data$dzoneh <- (data$homeaway=="home" & data$data.attacker.pos.y<zone1[1])*1
+        data$azoneh <- (data$homeaway=="home" & data$data.attacker.pos.y>=zone1[1])*1
         
-        data$azonea <- (data$homeaway=="away" & data$data.attacker.pos.y<zone1[1])*1
-        data$nzonea <- (data$homeaway=="away" & data$data.attacker.pos.y<zone2[1] & data$data.attacker.pos.y>=zone1[1])*1
-        data$dzonea <- (data$homeaway=="away" & data$data.attacker.pos.y>=zone2[1])*1
+        data$azonea <- (data$homeaway=="away" & data$data.attacker.pos.y<=zone1[1])*1
+        data$dzonea <- (data$homeaway=="away" & data$data.attacker.pos.y>zone1[1])*1
       }
       
       if(('data.is_overtime' %in% colnames(data))==F) {
@@ -90,17 +83,15 @@ for(j in 1:length(location)) {
 h=dim(img)[1]
 w=dim(img)[2]
 
-gib1 <- subset(output,output$map == "London Docks")
+gib1 <- subset(output,output$map.x == "London Docks" & (output$azonea==1 | output$azoneh==1))
 ggplot(data=gib1) +
   annotation_custom(grid::rasterGrob(img, width=unit(1,"npc"), height=unit(1,"npc")), 0, w, 0,-h) +
   theme_bw() + theme(legend.position = 'none',axis.title = element_blank()) +
   coord_equal() + # To keep the aspect ratio of the image.
   scale_x_continuous(expand=c(0,0),limits=c(0,w)) +
   scale_y_reverse(expand=c(0,0),limits=c(h,0)) +
-  geom_hline(yintercept=400)+
-  geom_hline(yintercept=600)
-# geom_point(aes(data.attacker.pos.x,data.attacker.pos.y,color="red")) +
-#geom_point(aes(data.pos.x,data.pos.y,color="blue"))
+  geom_vline(xintercept=520)+
+ # geom_point(aes(data.attacker.pos.x,data.attacker.pos.y,color="red"))
 
 #geom_point(aes(data.attacker.pos.x,data.attacker.pos.y,color = as.factor(closerto))) +
 #geom_point(aes(data.pos.x,data.pos.y,color = as.factor(closerto)))
