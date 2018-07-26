@@ -11,12 +11,12 @@ output <- data.frame()
 
 # For each event folder
 location <- list.files(path = 'data', pattern = "structured")
-for(j in 1:length(location)) {
+for(j in 2:length(location)) {
   filenames <- list.files( path = paste('data/',location[j], sep = ""),pattern="*.json", full.names=TRUE)
   print(location[j])
   
   # for each game in each event folder
-  for (i in 2:length(filenames)) {
+  for (i in 1:length(filenames)) {
     #read json
     data_json <- fromJSON(filenames[i], simplifyVector = T)
     # filter out by mode if desired
