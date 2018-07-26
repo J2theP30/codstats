@@ -16,7 +16,7 @@ for(j in 1:length(location)) {
   print(location[j])
   
   # for each game in each event folder
-  for (i in 1:length(filenames)) {
+  for (i in 2:length(filenames)) {
     #read json
     data_json <- fromJSON(filenames[i], simplifyVector = T)
     # filter out by mode if desired
