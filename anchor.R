@@ -82,6 +82,39 @@ for(j in 8:length(location)) {
           hill4 <- c(250, 525)
         }
         
+        data$dist1 <- sqrt(((data$data.pos.x-hill1[1])^2)+((data$data.pos.y-hill1[2])^2))
+        data$dist2 <- sqrt(((data$data.pos.x-hill2[1])^2)+((data$data.pos.y-hill2[2])^2))
+        data$dist3 <- sqrt(((data$data.pos.x-hill3[1])^2)+((data$data.pos.y-hill3[2])^2))
+        data$dist4 <- sqrt(((data$data.pos.x-hill4[1])^2)+((data$data.pos.y-hill4[2])^2))
+        data$dist5 <- 0
+        data$closerto <- ifelse(data$hp == 1 & data$dist1 == 1, 1, 
+                                 ifelse(data$hp == 2 & data$dist2 == 1, 1,
+                                        ifelse(data$hp == 3 & data$dist3 == 1, 1,
+                                               ifelse(data$hp == 4 & data$dist4 == 1, 1,0))))
+        
+        data$dist2nexthp <- ifelse(data$hp == 1 , data$dist2, 
+                                    ifelse(data$hp == 2 , data$dist3,
+                                           ifelse(data$hp == 3 , data$dist4,
+                                                  ifelse(data$hp == 4 , data$dist1, data$dist5))))
+        
+        data$sdist1 <- (((data$data.pos.x-hill1[1])^2)+((data$data.pos.y-hill1[2])^2) <= (((data$data.pos.x-hill2[1])^2)+((data$data.pos.y-hill2[2])^2)))*1
+        data$sdist2 <- (((data$data.pos.x-hill2[1])^2)+((data$data.pos.y-hill2[2])^2) <= (((data$data.pos.x-hill3[1])^2)+((data$data.pos.y-hill3[2])^2)))*1
+        data$sdist3 <- (((data$data.pos.x-hill3[1])^2)+((data$data.pos.y-hill3[2])^2) <= (((data$data.pos.x-hill4[1])^2)+((data$data.pos.y-hill4[2])^2)))*1
+        data$sdist4 <- (((data$data.pos.x-hill4[1])^2)+((data$data.pos.y-hill4[2])^2) <= (((data$data.pos.x-hill1[1])^2)+((data$data.pos.y-hill1[2])^2)))*1
+        data$sdist5 <- 0
+        
+        data$ssdist1 <- (((data$data.pos.x-hill1[1])^2)+((data$data.pos.y-hill1[2])^2) <= (((data$data.pos.x-hill5[1])^2)+((data$data.pos.y-hill5[2])^2)))*1
+        data$ssdist2 <- (((data$data.pos.x-hill2[1])^2)+((data$data.pos.y-hill2[2])^2) <= (((data$data.pos.x-hill1[1])^2)+((data$data.pos.y-hill1[2])^2)))*1
+        data$ssdist3 <- (((data$data.pos.x-hill3[1])^2)+((data$data.pos.y-hill3[2])^2) <= (((data$data.pos.x-hill2[1])^2)+((data$data.pos.y-hill2[2])^2)))*1
+        data$ssdist4 <- (((data$data.pos.x-hill4[1])^2)+((data$data.pos.y-hill4[2])^2) <= (((data$data.pos.x-hill3[1])^2)+((data$data.pos.y-hill3[2])^2)))*1
+        data$sdist5 <- 0
+        
+        data$scloserto <- ifelse(data$type=="death" | (data$hp == 1 & data$sdist1 == 1), 1, 
+                                  ifelse(data$type=="death" | (data$hp == 2 & data$sdist2 == 1), 1,
+                                         ifelse(data$type=="death" | (data$hp == 3 & data$sdist3 == 1), 1,
+                                                ifelse(data$type=="death" | (data$hp == 4 & data$sdist4 == 1), 1, 0))))
+        
+        
         data1$dist1 <- sqrt(((data1$data.pos.x-hill1[1])^2)+((data1$data.pos.y-hill1[2])^2))
         data1$dist2 <- sqrt(((data1$data.pos.x-hill2[1])^2)+((data1$data.pos.y-hill2[2])^2))
         data1$dist3 <- sqrt(((data1$data.pos.x-hill3[1])^2)+((data1$data.pos.y-hill3[2])^2))
@@ -171,6 +204,41 @@ for(j in 8:length(location)) {
           hill4 <- c(300, 425)
           hill5 <- c(750, 625)
         }
+        data$dist1 <- sqrt(((data$data.pos.x-hill1[1])^2)+((data$data.pos.y-hill1[2])^2))
+        data$dist2 <- sqrt(((data$data.pos.x-hill2[1])^2)+((data$data.pos.y-hill2[2])^2))
+        data$dist3 <- sqrt(((data$data.pos.x-hill3[1])^2)+((data$data.pos.y-hill3[2])^2))
+        data$dist4 <- sqrt(((data$data.pos.x-hill4[1])^2)+((data$data.pos.y-hill4[2])^2))
+        data$dist5 <- sqrt(((data$data.pos.x-hill5[1])^2)+((data$data.pos.y-hill5[2])^2))
+        data$closerto <- ifelse(data$hp == 1 & data$dist1 == 1, 1, 
+                                 ifelse(data$hp == 2 & data$dist2 == 1, 1,
+                                        ifelse(data$hp == 3 & data$dist3 == 1, 1,
+                                               ifelse(data$hp == 4 & data$dist4 == 1, 1,
+                                                      ifelse(data$hp == 5 & data$dist5 == 1, 1, 0)))))
+        
+        data$dist2nexthp <- ifelse(data$hp == 1 , data$dist2, 
+                                    ifelse(data$hp == 2 , data$dist3,
+                                           ifelse(data$hp == 3 , data$dist4,
+                                                  ifelse(data$hp == 4 , data$dist5, data$dist1))))
+        
+        data$sdist1 <- (((data$data.pos.x-hill1[1])^2)+((data$data.pos.y-hill1[2])^2) <= (((data$data.pos.x-hill2[1])^2)+((data$data.pos.y-hill2[2])^2)))*1
+        data$sdist2 <- (((data$data.pos.x-hill2[1])^2)+((data$data.pos.y-hill2[2])^2) <= (((data$data.pos.x-hill3[1])^2)+((data$data.pos.y-hill3[2])^2)))*1
+        data$sdist3 <- (((data$data.pos.x-hill3[1])^2)+((data$data.pos.y-hill3[2])^2) <= (((data$data.pos.x-hill4[1])^2)+((data$data.pos.y-hill4[2])^2)))*1
+        data$sdist4 <- (((data$data.pos.x-hill4[1])^2)+((data$data.pos.y-hill4[2])^2) <= (((data$data.pos.x-hill5[1])^2)+((data$data.pos.y-hill5[2])^2)))*1
+        data$sdist5 <- (((data$data.pos.x-hill5[1])^2)+((data$data.pos.y-hill5[2])^2) <= (((data$data.pos.x-hill1[1])^2)+((data$data.pos.y-hill1[2])^2)))*1
+        
+        data$ssdist1 <- (((data$data.pos.x-hill1[1])^2)+((data$data.pos.y-hill1[2])^2) <= (((data$data.pos.x-hill5[1])^2)+((data$data.pos.y-hill5[2])^2)))*1
+        data$ssdist2 <- (((data$data.pos.x-hill2[1])^2)+((data$data.pos.y-hill2[2])^2) <= (((data$data.pos.x-hill1[1])^2)+((data$data.pos.y-hill1[2])^2)))*1
+        data$ssdist3 <- (((data$data.pos.x-hill3[1])^2)+((data$data.pos.y-hill3[2])^2) <= (((data$data.pos.x-hill2[1])^2)+((data$data.pos.y-hill2[2])^2)))*1
+        data$ssdist4 <- (((data$data.pos.x-hill4[1])^2)+((data$data.pos.y-hill4[2])^2) <= (((data$data.pos.x-hill3[1])^2)+((data$data.pos.y-hill3[2])^2)))*1
+        data$ssdist5 <- (((data$data.pos.x-hill5[1])^2)+((data$data.pos.y-hill5[2])^2) <= (((data$data.pos.x-hill4[1])^2)+((data$data.pos.y-hill4[2])^2)))*1
+        
+        data$scloserto <- ifelse(data$type=="death" | (data$hp == 1 & data$sdist1 == 1), 1, 
+                                  ifelse(data$type=="death" | (data$hp == 2 & data$sdist2 == 1), 1,
+                                         ifelse(data$type=="death" | (data$hp == 3 & data$sdist3 == 1), 1,
+                                                ifelse(data$type=="death" | (data$hp == 4 & data$sdist4 == 1), 1,
+                                                       ifelse(data$type=="death" | (data$hp == 5 & data$sdist5 == 1), 1, 0)))))
+        
+        
         data1$dist1 <- sqrt(((data1$data.pos.x-hill1[1])^2)+((data1$data.pos.y-hill1[2])^2))
         data1$dist2 <- sqrt(((data1$data.pos.x-hill2[1])^2)+((data1$data.pos.y-hill2[2])^2))
         data1$dist3 <- sqrt(((data1$data.pos.x-hill3[1])^2)+((data1$data.pos.y-hill3[2])^2))
@@ -245,8 +313,8 @@ for(j in 8:length(location)) {
       
       #  data<-merge(data, team_players, by.x ='data.attacker.id', by.y = 'name')
       #data<-merge(data,team_players,by.x='data.id',by.y='name')
-      output<-rbind(data1,data2)
-      output<-rbind(output,data1)
+      data<-rbind(data1,data2)
+      output<-rbind(output,data)
     }}}
 
 
