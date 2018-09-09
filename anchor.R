@@ -12,7 +12,7 @@ img <- readPNG('maps/ww2/valkyrie.png')
 output <- data.frame()
 
 location <- list.files(path = 'data', pattern = "structured")
-for(j in 10:length(location)) {
+for(j in 8:length(location)) {
   
   filenames <- list.files(path = paste('data/',location[j], sep = ""),pattern="*.json", full.names=TRUE)
   print(location[j]) # show when you start each new event
@@ -58,6 +58,8 @@ for(j in 10:length(location)) {
         set <- rep(seq(1,4),each = 60*1000*4)
         df <- data.frame(time, dur,hp, set)
         data = merge(data, df, by.x = 'time_ms', by.y = 'time')
+        data1 = subset(data,data$dur < 10000)
+        data2 = subset(data,data$dur > 50000)
         # only works for this hardpoint example with 4 hps
         # you can add others tho
         if(data_json$map == "Gibraltar") {
@@ -80,47 +82,81 @@ for(j in 10:length(location)) {
           hill4 <- c(250, 525)
         }
         
+        data1$dist1 <- sqrt(((data1$data.pos.x-hill1[1])^2)+((data1$data.pos.y-hill1[2])^2))
+        data1$dist2 <- sqrt(((data1$data.pos.x-hill2[1])^2)+((data1$data.pos.y-hill2[2])^2))
+        data1$dist3 <- sqrt(((data1$data.pos.x-hill3[1])^2)+((data1$data.pos.y-hill3[2])^2))
+        data1$dist4 <- sqrt(((data1$data.pos.x-hill4[1])^2)+((data1$data.pos.y-hill4[2])^2))
+        data1$dist5 <- 0
+        data1$closerto <- ifelse(data1$hp == 1 & data1$dist1 == 1, 1, 
+                                 ifelse(data1$hp == 2 & data1$dist2 == 1, 1,
+                                        ifelse(data1$hp == 3 & data1$dist3 == 1, 1,
+                                               ifelse(data1$hp == 4 & data1$dist4 == 1, 1,0))))
         
-        data$dist1 <- (((data$data.attacker.pos.x-hill1[1])^2)+((data$data.attacker.pos.y-hill1[2])^2) <= 250^2)*1
-        data$dist2 <- (((data$data.attacker.pos.x-hill2[1])^2)+((data$data.attacker.pos.y-hill2[2])^2) <= 250^2)*1
-        data$dist3 <- (((data$data.attacker.pos.x-hill3[1])^2)+((data$data.attacker.pos.y-hill3[2])^2) <= 250^2)*1
-        data$dist4 <- (((data$data.attacker.pos.x-hill4[1])^2)+((data$data.attacker.pos.y-hill4[2])^2) <= 250^2)*1
-        data$dist5 <- 0
-        data$closerto <- ifelse(data$hp == 1 & data$dist1 == 1, 1, 
-                                ifelse(data$hp == 2 & data$dist2 == 1, 1,
-                                       ifelse(data$hp == 3 & data$dist3 == 1, 1,
-                                              ifelse(data$hp == 4 & data$dist4 == 1, 1,0))))
-        data$sdist1 <- (((data$data.pos.x-hill1[1])^2)+((data$data.pos.y-hill1[2])^2) <= (((data$data.pos.x-hill2[1])^2)+((data$data.pos.y-hill2[2])^2)))*1
-        data$sdist2 <- (((data$data.pos.x-hill2[1])^2)+((data$data.pos.y-hill2[2])^2) <= (((data$data.pos.x-hill3[1])^2)+((data$data.pos.y-hill3[2])^2)))*1
-        data$sdist3 <- (((data$data.pos.x-hill3[1])^2)+((data$data.pos.y-hill3[2])^2) <= (((data$data.pos.x-hill4[1])^2)+((data$data.pos.y-hill4[2])^2)))*1
-        data$sdist4 <- (((data$data.pos.x-hill4[1])^2)+((data$data.pos.y-hill4[2])^2) <= (((data$data.pos.x-hill1[1])^2)+((data$data.pos.y-hill1[2])^2)))*1
-        data$sdist5 <- 0
-        data$scloserto <- ifelse(data$type=="death" | (data$hp == 1 & data$sdist1 == 1), 1, 
-                                 ifelse(data$type=="death" | (data$hp == 2 & data$sdist2 == 1), 1,
-                                        ifelse(data$type=="death" | (data$hp == 3 & data$sdist3 == 1), 1,
-                                               ifelse(data$type=="death" | (data$hp == 4 & data$sdist4 == 1), 1,0))))
-        for(x in 1:nrow(data)){
-          data$anchored <-ifelse(data$scloserto==0 &
-                                   #data$player.team %in% anchor_function2(data,x) &
-                                   !is.na(match(data$player.team,anchor_function2(data,x))) &
-                                   data$dur>40000 &
-                                   anchor_function1(data,x) - data$time_ms > -5000,1,0)
-          data$anchorplayer <-ifelse(data$scloserto==0 &
-                                       #data$player.team %in% anchor_function2(data,x) &
-                                       !is.na(match(data$player.team,anchor_function2(data,x))) &
-                                       data$dur>40000 &
-                                       anchor_function1(data,x) - data$time_ms > -5000,as.character(anchor_function3(data,x)[match(data$player.team,anchor_function2(data,x))]),0)
-        }
-      }
+        data1$dist2nexthp <- ifelse(data1$hp == 1 , data1$dist2, 
+                                    ifelse(data1$hp == 2 , data1$dist3,
+                                           ifelse(data1$hp == 3 , data1$dist4,
+                                                  ifelse(data1$hp == 4 , data1$dist1, data1$dist5))))
+        
+        data1$sdist1 <- (((data1$data.pos.x-hill1[1])^2)+((data1$data.pos.y-hill1[2])^2) <= (((data1$data.pos.x-hill2[1])^2)+((data1$data.pos.y-hill2[2])^2)))*1
+        data1$sdist2 <- (((data1$data.pos.x-hill2[1])^2)+((data1$data.pos.y-hill2[2])^2) <= (((data1$data.pos.x-hill3[1])^2)+((data1$data.pos.y-hill3[2])^2)))*1
+        data1$sdist3 <- (((data1$data.pos.x-hill3[1])^2)+((data1$data.pos.y-hill3[2])^2) <= (((data1$data.pos.x-hill4[1])^2)+((data1$data.pos.y-hill4[2])^2)))*1
+        data1$sdist4 <- (((data1$data.pos.x-hill4[1])^2)+((data1$data.pos.y-hill4[2])^2) <= (((data1$data.pos.x-hill1[1])^2)+((data1$data.pos.y-hill1[2])^2)))*1
+        data1$sdist5 <- 0
+        
+        data1$ssdist1 <- (((data1$data.pos.x-hill1[1])^2)+((data1$data.pos.y-hill1[2])^2) <= (((data1$data.pos.x-hill5[1])^2)+((data1$data.pos.y-hill5[2])^2)))*1
+        data1$ssdist2 <- (((data1$data.pos.x-hill2[1])^2)+((data1$data.pos.y-hill2[2])^2) <= (((data1$data.pos.x-hill1[1])^2)+((data1$data.pos.y-hill1[2])^2)))*1
+        data1$ssdist3 <- (((data1$data.pos.x-hill3[1])^2)+((data1$data.pos.y-hill3[2])^2) <= (((data1$data.pos.x-hill2[1])^2)+((data1$data.pos.y-hill2[2])^2)))*1
+        data1$ssdist4 <- (((data1$data.pos.x-hill4[1])^2)+((data1$data.pos.y-hill4[2])^2) <= (((data1$data.pos.x-hill3[1])^2)+((data1$data.pos.y-hill3[2])^2)))*1
+        data1$sdist5 <- 0
+        
+        data1$scloserto <- ifelse(data1$type=="death" | (data1$hp == 1 & data1$sdist1 == 1), 1, 
+                                  ifelse(data1$type=="death" | (data1$hp == 2 & data1$sdist2 == 1), 1,
+                                         ifelse(data1$type=="death" | (data1$hp == 3 & data1$sdist3 == 1), 1,
+                                                ifelse(data1$type=="death" | (data1$hp == 4 & data1$sdist4 == 1), 1, 0))))
+        
+        
+        data2$dist1 <- sqrt(((data2$data.pos.x-hill1[1])^2)+((data2$data.pos.y-hill1[2])^2))
+        data2$dist2 <- sqrt(((data2$data.pos.x-hill2[1])^2)+((data2$data.pos.y-hill2[2])^2))
+        data2$dist3 <- sqrt(((data2$data.pos.x-hill3[1])^2)+((data2$data.pos.y-hill3[2])^2))
+        data2$dist4 <- sqrt(((data2$data.pos.x-hill4[1])^2)+((data2$data.pos.y-hill4[2])^2))
+        data2$dist5 <- 0
+        data2$closerto <- ifelse(data2$hp == 1 & data2$dist1 == 1, 1, 
+                                 ifelse(data2$hp == 2 & data2$dist2 == 1, 1,
+                                        ifelse(data2$hp == 3 & data2$dist3 == 1, 1,
+                                               ifelse(data2$hp == 4 & data2$dist4 == 1, 1,0))))
+        
+        data2$dist2nexthp <- ifelse(data2$hp == 1 , data2$dist2, 
+                                    ifelse(data2$hp == 2 , data2$dist3,
+                                           ifelse(data2$hp == 3 , data2$dist4,
+                                                  ifelse(data2$hp == 4 , data2$dist1, data2$dist5))))
+        
+        data2$sdist1 <- (((data2$data.pos.x-hill1[1])^2)+((data2$data.pos.y-hill1[2])^2) <= (((data2$data.pos.x-hill2[1])^2)+((data2$data.pos.y-hill2[2])^2)))*1
+        data2$sdist2 <- (((data2$data.pos.x-hill2[1])^2)+((data2$data.pos.y-hill2[2])^2) <= (((data2$data.pos.x-hill3[1])^2)+((data2$data.pos.y-hill3[2])^2)))*1
+        data2$sdist3 <- (((data2$data.pos.x-hill3[1])^2)+((data2$data.pos.y-hill3[2])^2) <= (((data2$data.pos.x-hill4[1])^2)+((data2$data.pos.y-hill4[2])^2)))*1
+        data2$sdist4 <- (((data2$data.pos.x-hill4[1])^2)+((data2$data.pos.y-hill4[2])^2) <= (((data2$data.pos.x-hill1[1])^2)+((data2$data.pos.y-hill1[2])^2)))*1
+        data2$sdist5 <- 0
+        
+        data2$ssdist1 <- (((data2$data.pos.x-hill1[1])^2)+((data2$data.pos.y-hill1[2])^2) <= (((data2$data.pos.x-hill5[1])^2)+((data2$data.pos.y-hill5[2])^2)))*1
+        data2$ssdist2 <- (((data2$data.pos.x-hill2[1])^2)+((data2$data.pos.y-hill2[2])^2) <= (((data2$data.pos.x-hill1[1])^2)+((data2$data.pos.y-hill1[2])^2)))*1
+        data2$ssdist3 <- (((data2$data.pos.x-hill3[1])^2)+((data2$data.pos.y-hill3[2])^2) <= (((data2$data.pos.x-hill2[1])^2)+((data2$data.pos.y-hill2[2])^2)))*1
+        data2$ssdist4 <- (((data2$data.pos.x-hill4[1])^2)+((data2$data.pos.y-hill4[2])^2) <= (((data2$data.pos.x-hill3[1])^2)+((data2$data.pos.y-hill3[2])^2)))*1
+        data2$sdist5 <- 0
+        
+        data2$scloserto <- ifelse(data2$type=="death" | (data2$hp == 1 & data2$ssdist1 == 1), 1, 
+                                  ifelse(data2$type=="death" | (data2$hp == 2 & data2$ssdist2 == 1), 1,
+                                         ifelse(data2$type=="death" | (data2$hp == 3 & data2$ssdist3 == 1), 1,
+                                                ifelse(data2$type=="death" | (data2$hp == 4 & data2$ssdist4 == 1), 1, 0))))}
+      
       else {
         hp <- rep(seq(1,5),4, each = 60*1000)
         time <- seq(start_time, start_time+length(hp)-1) # shift 10 secs to account for rotation
         dur <- (time-start_time)%%60000
         set <- rep(seq(1,5),each = 60*1000*4)
         df <- data.frame(time,dur,hp, set)
-        
         data = merge(data, df, by.x = 'time_ms', by.y = 'time')
-        if( data_json$map == "London Docks") {
+        data1 = subset(data,data$dur < 10000)
+        data2 = subset(data,data$dur > 50000)
+        if(data_json$map == "London Docks") {
           #london docks
           hill1 = c(500,550)
           hill2 = c(700,650)
@@ -135,45 +171,159 @@ for(j in 10:length(location)) {
           hill4 <- c(300, 425)
           hill5 <- c(750, 625)
         }
-        data$dist1 <- (((data$data.attacker.pos.x-hill1[1])^2)+((data$data.attacker.pos.y-hill1[2])^2) <= 250^2)*1
-        data$dist2 <- (((data$data.attacker.pos.x-hill2[1])^2)+((data$data.attacker.pos.y-hill2[2])^2) <= 250^2)*1
-        data$dist3 <- (((data$data.attacker.pos.x-hill3[1])^2)+((data$data.attacker.pos.y-hill3[2])^2) <= 250^2)*1
-        data$dist4 <- (((data$data.attacker.pos.x-hill4[1])^2)+((data$data.attacker.pos.y-hill4[2])^2) <= 250^2)*1
-        data$dist5 <- (((data$data.attacker.pos.x-hill5[1])^2)+((data$data.attacker.pos.y-hill5[2])^2) <= 250^2)*1
-        data$closerto <- ifelse(data$hp == 1 & data$dist1 == 1, 1, 
-                                ifelse(data$hp == 2 & data$dist2 == 1, 1,
-                                       ifelse(data$hp == 3 & data$dist3 == 1, 1,
-                                              ifelse(data$hp == 4 & data$dist4 == 1, 1,
-                                                     ifelse(data$hp == 5 & data$dist5 == 1, 1, 0)))))
-        data$sdist1 <- (((data$data.pos.x-hill1[1])^2)+((data$data.pos.y-hill1[2])^2) <= (((data$data.pos.x-hill2[1])^2)+((data$data.pos.y-hill2[2])^2)))*1
-        data$sdist2 <- (((data$data.pos.x-hill2[1])^2)+((data$data.pos.y-hill2[2])^2) <= (((data$data.pos.x-hill3[1])^2)+((data$data.pos.y-hill3[2])^2)))*1
-        data$sdist3 <- (((data$data.pos.x-hill3[1])^2)+((data$data.pos.y-hill3[2])^2) <= (((data$data.pos.x-hill4[1])^2)+((data$data.pos.y-hill4[2])^2)))*1
-        data$sdist4 <- (((data$data.pos.x-hill4[1])^2)+((data$data.pos.y-hill4[2])^2) <= (((data$data.pos.x-hill5[1])^2)+((data$data.pos.y-hill5[2])^2)))*1
-        data$sdist5 <- (((data$data.pos.x-hill5[1])^2)+((data$data.pos.y-hill5[2])^2) <= (((data$data.pos.x-hill1[1])^2)+((data$data.pos.y-hill1[2])^2)))*1
-        data$scloserto <- ifelse(data$type=="death" | (data$hp == 1 & data$sdist1 == 1), 1, 
-                                 ifelse(data$type=="death" | (data$hp == 2 & data$sdist2 == 1), 1,
-                                        ifelse(data$type=="death" | (data$hp == 3 & data$sdist3 == 1), 1,
-                                               ifelse(data$type=="death" | (data$hp == 4 & data$sdist4 == 1), 1,
-                                                      ifelse(data$type=="death" | (data$hp == 5 & data$sdist5 == 1), 1, 0)))))
-        for(x in 1:nrow(data)){
-          
-          data$anchored <-ifelse(data$scloserto==0 &
-                                   !is.na(match(data$player.team[x],anchor_function2(data,x))) &
-                                   data$dur>40000 &
-                                   anchor_function1(data,x) - data$time_ms > -5000,1,0)
-          data$anchorplayer <-ifelse(data$scloserto==0 &
-                                       !is.na(match(data$player.team[x],anchor_function2(data,x))) &
-                                       data$dur>40000 &
-                                       anchor_function1(data,x) - data$time_ms > -5000,anchor_function3(data,x)[match(data$player.team[x],anchor_function2(data,x))],0)
-           }
-      }
+        data1$dist1 <- sqrt(((data1$data.pos.x-hill1[1])^2)+((data1$data.pos.y-hill1[2])^2))
+        data1$dist2 <- sqrt(((data1$data.pos.x-hill2[1])^2)+((data1$data.pos.y-hill2[2])^2))
+        data1$dist3 <- sqrt(((data1$data.pos.x-hill3[1])^2)+((data1$data.pos.y-hill3[2])^2))
+        data1$dist4 <- sqrt(((data1$data.pos.x-hill4[1])^2)+((data1$data.pos.y-hill4[2])^2))
+        data1$dist5 <- sqrt(((data1$data.pos.x-hill5[1])^2)+((data1$data.pos.y-hill5[2])^2))
+        data1$closerto <- ifelse(data1$hp == 1 & data1$dist1 == 1, 1, 
+                                 ifelse(data1$hp == 2 & data1$dist2 == 1, 1,
+                                        ifelse(data1$hp == 3 & data1$dist3 == 1, 1,
+                                               ifelse(data1$hp == 4 & data1$dist4 == 1, 1,
+                                                      ifelse(data1$hp == 5 & data1$dist5 == 1, 1, 0)))))
+        
+        data1$dist2nexthp <- ifelse(data1$hp == 1 , data1$dist2, 
+                                    ifelse(data1$hp == 2 , data1$dist3,
+                                           ifelse(data1$hp == 3 , data1$dist4,
+                                                  ifelse(data1$hp == 4 , data1$dist5, data1$dist1))))
+        
+        data1$sdist1 <- (((data1$data.pos.x-hill1[1])^2)+((data1$data.pos.y-hill1[2])^2) <= (((data1$data.pos.x-hill2[1])^2)+((data1$data.pos.y-hill2[2])^2)))*1
+        data1$sdist2 <- (((data1$data.pos.x-hill2[1])^2)+((data1$data.pos.y-hill2[2])^2) <= (((data1$data.pos.x-hill3[1])^2)+((data1$data.pos.y-hill3[2])^2)))*1
+        data1$sdist3 <- (((data1$data.pos.x-hill3[1])^2)+((data1$data.pos.y-hill3[2])^2) <= (((data1$data.pos.x-hill4[1])^2)+((data1$data.pos.y-hill4[2])^2)))*1
+        data1$sdist4 <- (((data1$data.pos.x-hill4[1])^2)+((data1$data.pos.y-hill4[2])^2) <= (((data1$data.pos.x-hill5[1])^2)+((data1$data.pos.y-hill5[2])^2)))*1
+        data1$sdist5 <- (((data1$data.pos.x-hill5[1])^2)+((data1$data.pos.y-hill5[2])^2) <= (((data1$data.pos.x-hill1[1])^2)+((data1$data.pos.y-hill1[2])^2)))*1
+        
+        data1$ssdist1 <- (((data1$data.pos.x-hill1[1])^2)+((data1$data.pos.y-hill1[2])^2) <= (((data1$data.pos.x-hill5[1])^2)+((data1$data.pos.y-hill5[2])^2)))*1
+        data1$ssdist2 <- (((data1$data.pos.x-hill2[1])^2)+((data1$data.pos.y-hill2[2])^2) <= (((data1$data.pos.x-hill1[1])^2)+((data1$data.pos.y-hill1[2])^2)))*1
+        data1$ssdist3 <- (((data1$data.pos.x-hill3[1])^2)+((data1$data.pos.y-hill3[2])^2) <= (((data1$data.pos.x-hill2[1])^2)+((data1$data.pos.y-hill2[2])^2)))*1
+        data1$ssdist4 <- (((data1$data.pos.x-hill4[1])^2)+((data1$data.pos.y-hill4[2])^2) <= (((data1$data.pos.x-hill3[1])^2)+((data1$data.pos.y-hill3[2])^2)))*1
+        data1$ssdist5 <- (((data1$data.pos.x-hill5[1])^2)+((data1$data.pos.y-hill5[2])^2) <= (((data1$data.pos.x-hill4[1])^2)+((data1$data.pos.y-hill4[2])^2)))*1
+        
+        data1$scloserto <- ifelse(data1$type=="death" | (data1$hp == 1 & data1$sdist1 == 1), 1, 
+                                  ifelse(data1$type=="death" | (data1$hp == 2 & data1$sdist2 == 1), 1,
+                                         ifelse(data1$type=="death" | (data1$hp == 3 & data1$sdist3 == 1), 1,
+                                                ifelse(data1$type=="death" | (data1$hp == 4 & data1$sdist4 == 1), 1,
+                                                       ifelse(data1$type=="death" | (data1$hp == 5 & data1$sdist5 == 1), 1, 0)))))
+        
+        data2$dist1 <- sqrt(((data2$data.pos.x-hill1[1])^2)+((data2$data.pos.y-hill1[2])^2))
+        data2$dist2 <- sqrt(((data2$data.pos.x-hill2[1])^2)+((data2$data.pos.y-hill2[2])^2))
+        data2$dist3 <- sqrt(((data2$data.pos.x-hill3[1])^2)+((data2$data.pos.y-hill3[2])^2))
+        data2$dist4 <- sqrt(((data2$data.pos.x-hill4[1])^2)+((data2$data.pos.y-hill4[2])^2))
+        data2$dist5 <- sqrt(((data2$data.pos.x-hill5[1])^2)+((data2$data.pos.y-hill5[2])^2))
+        data2$closerto <- ifelse(data2$hp == 1 & data2$dist1 == 1, 1, 
+                                 ifelse(data2$hp == 2 & data2$dist2 == 1, 1,
+                                        ifelse(data2$hp == 3 & data2$dist3 == 1, 1,
+                                               ifelse(data2$hp == 4 & data2$dist4 == 1, 1,
+                                                      ifelse(data2$hp == 5 & data2$dist5 == 1, 1, 0)))))
+        
+        data2$dist2nexthp <- ifelse(data2$hp == 1 , data2$dist2, 
+                                    ifelse(data2$hp == 2 , data2$dist3,
+                                           ifelse(data2$hp == 3 , data2$dist4,
+                                                  ifelse(data2$hp == 4 , data2$dist5, data2$dist1))))
+        
+        data2$sdist1 <- (((data2$data.pos.x-hill1[1])^2)+((data2$data.pos.y-hill1[2])^2) <= (((data2$data.pos.x-hill2[1])^2)+((data2$data.pos.y-hill2[2])^2)))*1
+        data2$sdist2 <- (((data2$data.pos.x-hill2[1])^2)+((data2$data.pos.y-hill2[2])^2) <= (((data2$data.pos.x-hill3[1])^2)+((data2$data.pos.y-hill3[2])^2)))*1
+        data2$sdist3 <- (((data2$data.pos.x-hill3[1])^2)+((data2$data.pos.y-hill3[2])^2) <= (((data2$data.pos.x-hill4[1])^2)+((data2$data.pos.y-hill4[2])^2)))*1
+        data2$sdist4 <- (((data2$data.pos.x-hill4[1])^2)+((data2$data.pos.y-hill4[2])^2) <= (((data2$data.pos.x-hill5[1])^2)+((data2$data.pos.y-hill5[2])^2)))*1
+        data2$sdist5 <- (((data2$data.pos.x-hill5[1])^2)+((data2$data.pos.y-hill5[2])^2) <= (((data2$data.pos.x-hill1[1])^2)+((data2$data.pos.y-hill1[2])^2)))*1
+        
+        data2$ssdist1 <- (((data2$data.pos.x-hill1[1])^2)+((data2$data.pos.y-hill1[2])^2) <= (((data2$data.pos.x-hill5[1])^2)+((data2$data.pos.y-hill5[2])^2)))*1
+        data2$ssdist2 <- (((data2$data.pos.x-hill2[1])^2)+((data2$data.pos.y-hill2[2])^2) <= (((data2$data.pos.x-hill1[1])^2)+((data2$data.pos.y-hill1[2])^2)))*1
+        data2$ssdist3 <- (((data2$data.pos.x-hill3[1])^2)+((data2$data.pos.y-hill3[2])^2) <= (((data2$data.pos.x-hill2[1])^2)+((data2$data.pos.y-hill2[2])^2)))*1
+        data2$ssdist4 <- (((data2$data.pos.x-hill4[1])^2)+((data2$data.pos.y-hill4[2])^2) <= (((data2$data.pos.x-hill3[1])^2)+((data2$data.pos.y-hill3[2])^2)))*1
+        data2$ssdist5 <- (((data2$data.pos.x-hill5[1])^2)+((data2$data.pos.y-hill5[2])^2) <= (((data2$data.pos.x-hill4[1])^2)+((data2$data.pos.y-hill4[2])^2)))*1
+        
+        
+        data2$scloserto <-ifelse(data2$type=="death" | (data2$hp == 1 & data2$ssdist1 == 1), 1, 
+                                 ifelse(data2$type=="death" | (data2$hp == 2 & data2$ssdist2 == 1), 1,
+                                        ifelse(data2$type=="death" | (data2$hp == 3 & data2$ssdist3 == 1), 1,
+                                               ifelse(data2$type=="death" | (data2$hp == 4 & data2$ssdist4 == 1), 1,
+                                                      ifelse(data2$type=="death" | (data2$hp == 5 & data2$ssdist5 == 1), 1, 0)))))} 
+      
       
       
       
       #  data<-merge(data, team_players, by.x ='data.attacker.id', by.y = 'name')
       #data<-merge(data,team_players,by.x='data.id',by.y='name')
-      output<-rbind(output,data)
+      output<-rbind(data1,data2)
+      output<-rbind(output,data1)
     }}}
+
+
+## Make a new dataframe with each kill combined with each instance
+# of teammate spawn in the next 5 seconds
+anchorKills <- data.frame()
+kills <- output %>%
+  filter(type == 'death', dur > 40000)
+spawn = output %>%
+  filter(type == 'spawn', ifelse((set==1 & hp==1),dur > 50000,(dur > 50000 | dur< 10000)))
+for(i in 1:nrow(kills)) {
+  team = kills[i, "player.team"]
+  game = kills[i, "id"]
+  time = kills[i, 'time_ms']
+  spawns = subset(spawn, spawn$id == game & spawn$player.team == team & 
+                    spawn$time_ms %in% (time+1):(time+5000))
+  if(nrow(spawns) > 0){
+    anchorKills <- rbind(anchorKills, 
+                         data.frame(killer = rep(kills[i,'data.id'], nrow(spawns)),
+                                    dist = spawns$dist2nexthp,
+                                    map = spawns$map, hp = spawns$hp))
+  }}
+
+spawn %>%
+  group_by(player.team,map,hp) %>%
+  summarise(spawnpct=mean(scloserto),rot=n()) %>%
+  filter(rot>100) %>%
+  arrange(desc(spawnpct))
+
+spawn<-spawn %>%
+  group_by(map,hp) %>%
+  summarise(spawnpct=mean(),rot=n())
+ggplot(spawn, aes(spawnpct, color = as.factor(hp)))+geom_density()
+
+
+anchordist<-anchorKills %>%
+  group_by(killer,map,hp) %>%
+  summarise(kills=n(),dist=mean(dist)) %>%
+  arrange((dist))
+
+timehp<-output %>%
+  group_by(data.id,map,hp) %>%
+  summarise(rot=n())
+
+anchor<-merge(anchordist,timehp,by.x=c("killer","map","hp"),by.y=c("data.id","map","hp"))
+anchor%>%
+  group_by(killer,map,hp) %>%
+  summarise(kpr=kills/rot,rot=rot)%>%
+  filter(rot>200)%>%
+  arrange(desc(kpr))%>%
+  data.frame
+
+
+
+
+
+
+
+
+anchordist<-anchorKills %>%
+  group_by(killer) %>%
+  summarise(kills=n(),dist=mean(dist)) %>%
+  arrange((dist))
+
+timehp<-output %>%
+  group_by(data.id) %>%
+  summarise(rot=n())
+
+anchor<-merge(anchordist,timehp,by.x=c("killer"),by.y=c("data.id"))
+anchor%>%
+  group_by(killer,map) %>%
+  summarise(kpr=kills/rot,rot=rot)%>%
+  filter(rot>750)%>%
+  arrange(desc(kpr))%>%
+  data.frame
+
+
 
 #function to get last death
 anchor_function1<-function(data,x){
